@@ -166,7 +166,15 @@ app.get("/api/business/:id", async (req, res) => {
 
 });
 
-
+console.log("MONGO_URI exists:", !!process.env.MONGO_URI);
+console.log(
+  "MONGO_URI starts with:",
+  process.env.MONGO_URI
+    ? process.env.MONGO_URI.substring(0, 20)
+    : "undefined"
+);
+console.log("MONGO_URI exists:", !!process.env.MONGO_URI);
+console.log("MONGO_URI prefix:", process.env.MONGO_URI?.substring(0, 20));
 // Connect MongoDB
 mongoose.connect(process.env.MONGO_URI || "mongodb://localhost:27017/approvalguard")
     .then(() => {
