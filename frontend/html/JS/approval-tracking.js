@@ -65,7 +65,11 @@ document.getElementById("approvalVaultPermission").addEventListener("change", ev
         ? "Information Vault data is ready and will be shared with the demo portal."
         : "Information Vault data will not be shared with the demo portal.", !event.target.checked);
 });
-document.querySelector("[data-demo-portal-link]").addEventListener("click", event => prepareDemoPortalLink(event.currentTarget));
+document.querySelector("[data-demo-portal-link]").addEventListener("click", event => {
+    prepareDemoPortalLink(event.currentTarget);
+    event.currentTarget.target = "_blank";
+    event.currentTarget.rel = "noopener noreferrer";
+});
 
 function renderTrackedApprovals() {
     const count = status => trackedApprovals.filter(item => item.currentStatus === status).length;
