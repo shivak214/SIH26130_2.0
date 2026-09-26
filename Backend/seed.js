@@ -180,9 +180,17 @@ async function seed() {
     await Approval.findOneAndUpdate({ code: readinessApproval.code }, readinessApproval, { upsert: true, new: true, setDefaultsOnInsert: true });
     const legacyApproval = require("./utils/readinessTemplates").legacyApproval;
     await Approval.findOneAndUpdate({ code: legacyApproval.code }, legacyApproval, { upsert: true, new: true, setDefaultsOnInsert: true });
-    for (const template of readinessTemplates) {
-        await DocumentTemplate.findOneAndUpdate({ code: template.code }, template, { upsert: true, new: true, setDefaultsOnInsert: true });
-    }
+   for (const template of readinessTemplates) {
+    await DocumentTemplate.findOneAndUpdate(
+        { code: template.code },
+        template,
+        {
+            upsert: true,
+            returnDocument: "after",
+            setDefaultsOnInsert: true
+        }
+    );
+}
     console.log(`readiness templates: ${readinessTemplates.length} upserted`);
     for (const requirement of documentRequirements) {
         const code = `LEGACY_${requirement.approvalId}_${requirement._id}`;
