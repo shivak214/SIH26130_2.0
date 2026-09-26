@@ -10,6 +10,30 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="./CSS/style.css">
     <link rel="stylesheet" href="./CSS/feature-vaults.css">
+    <style>
+    #recalculateScore {
+        transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    #recalculateScore.is-calculating {
+        opacity: 0.85;
+        cursor: wait;
+    }
+
+    #recalculateScore.is-calculating .recalculate-icon {
+        animation: recalculateSpin 0.8s linear infinite;
+    }
+
+    @keyframes recalculateSpin {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
+    }
+</style>
 </head>
 <body>
 <div class="app">
@@ -41,7 +65,10 @@
             </section>
             <div class="incentive-dashboard-actions" aria-label="Incentive dashboard actions">
                 <button type="button" class="secondary-btn" id="verifyInformation"><i data-lucide="shield-check"></i> Verify Information</button>
-                <button type="button" class="primary-btn" id="recalculateScore"><i data-lucide="refresh-cw"></i> Recalculate Score</button>
+                <button type="button" class="primary-btn" id="recalculateScore">
+    <i class="recalculate-icon" data-lucide="refresh-cw"></i>
+    <span class="recalculate-text">Recalculate Score</span>
+</button>
             </div>
             <div class="incentive-notice"><i data-lucide="info"></i><span>Scoring: each verified evidence field contributes its published weight (total 100). Statuses are RELEVANT_MATCH at 80+, POSSIBLE_MATCH at 60–79, NEEDS_VERIFICATION at 30–59, and NOT_MATCHED below 30. A missing or unverified critical field blocks RELEVANT_MATCH. These results are not approvals or official eligibility decisions; confirm current terms, thresholds, and application windows with the relevant authority.</span></div>
             <section id="incentiveList" class="incentive-grid"></section>

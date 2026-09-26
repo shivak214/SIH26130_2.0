@@ -1,6 +1,7 @@
 const informationVaultKey = "approvalguard.information-vault.business.v3";
 const opportunitiesKey = "approvalguard.opportunities";
 const incentiveVaultKey = "approvalguard.information-vault.incentives.v1";
+const calculatedIncentivesKey = "approvalguard.incentives.calculated.v1";
 
 // The only policies exposed by this engine. Conditions are intentionally
 // explicit and weights for each policy total 100.
@@ -213,6 +214,57 @@ function scorePolicy(policy, facts) {
 function readOpportunities() {
     try { return JSON.parse(localStorage.getItem(opportunitiesKey) || "[]"); } catch (_) { return []; }
 }
+function loadCalculatedIncentives() {
+    try {
+        const saved = JSON.parse(
+            localStorage.getItem(calculatedIncentivesKey) || "null"
+        );
+
+        if (!saved || !Array.isArray(saved.scored)) {
+            return null;
+        }
+
+        return saved;
+    } catch (error) {
+        console.warn("Calculated incentive results could not be loaded.", error);
+        return null;
+    }
+}
+
+function saveCalculatedIncentives(facts, scored) {
+    const snapshot = {
+        calculatedAt: new Date().toISOString(),
+
+        vaultSummary: {
+            verifiedCount: facts.verifiedCount,
+            totalCount: facts.totalCount,
+            unverifiedCount: facts.unverifiedCount
+        },
+
+        scored: scored.map(({ policy, result }) => ({
+            policyId: policy.id,
+            result
+        }))
+    };
+
+    localStorage.setItem(
+        calculatedIncentivesKey,
+        JSON.stringify(snapshot)
+    );
+
+    return snapshot;
+}
+
+function calculateLatestIncentives() {
+    const facts = loadVaultFacts();
+
+    const scored = incentivePolicies.map(policy => ({
+        policy,
+        result: scorePolicy(policy, facts)
+    }));
+
+    return saveCalculatedIncentives(facts, scored);
+}
 
 function savePolicyToVault(policy) {
     let policyVaults = {};
@@ -254,44 +306,304 @@ function removeOpportunity(policyId) {
     render();
 }
 
-function render() {
-    const facts = loadVaultFacts();
-    document.getElementById("vaultVerificationStatus").textContent = facts.verifiedCount && !facts.unverifiedCount ? "READY" : "NEEDS VERIFICATION";
-    document.getElementById("vaultVerificationSummary").textContent = `${facts.verifiedCount} verified of ${facts.totalCount} entered field${facts.totalCount === 1 ? "" : "s"}; ${facts.unverifiedCount} unverified value${facts.unverifiedCount === 1 ? "" : "s"} excluded.`;
-    const scored = incentivePolicies.map(policy => ({ policy, result: scorePolicy(policy, facts) }));
-    const matched = scored.filter(item => item.result.matchStatus === "RELEVANT_MATCH" || item.result.matchStatus === "POSSIBLE_MATCH").length;
+function render(snapshot = null) {
+    const calculated = snapshot || loadCalculatedIncentives();
+
+    // First-ever visit: calculate once and save the result.
+    if (!calculated) {
+        const firstCalculation = calculateLatestIncentives();
+        return render(firstCalculation);
+    }
+
+    const summary = calculated.vaultSummary || {
+        verifiedCount: 0,
+        totalCount: 0,
+        unverifiedCount: 0
+    };
+
+    document.getElementById("vaultVerificationStatus").textContent =
+        summary.verifiedCount && !summary.unverifiedCount
+            ? "READY"
+            : "NEEDS VERIFICATION";
+
+    document.getElementById("vaultVerificationSummary").textContent =
+        `${summary.verifiedCount} verified of ${summary.totalCount} entered field${summary.totalCount === 1 ? "" : "s"}; ${summary.unverifiedCount} unverified value${summary.unverifiedCount === 1 ? "" : "s"} excluded.`;
+
+    const scored = calculated.scored
+        .map(savedItem => {
+            const policy = incentivePolicies.find(
+                item => item.id === savedItem.policyId
+            );
+
+            if (!policy) return null;
+
+            return {
+                policy,
+                result: savedItem.result
+            };
+        })
+        .filter(Boolean);
+
+    const matched = scored.filter(item =>
+        item.result.matchStatus === "RELEVANT_MATCH" ||
+        item.result.matchStatus === "POSSIBLE_MATCH"
+    ).length;
+
     document.getElementById("matchedCount").textContent = matched;
-    document.getElementById("reviewCount").textContent = scored.length - matched;
-    document.getElementById("incentiveList").innerHTML = scored.map(({ policy, result }) => {
-        const alreadyAdded = readOpportunities().some(item => item.id === policy.id);
-        if (alreadyAdded) savePolicyToVault(policy);
-        return `<article class="incentive-card ${result.matchStatus === "NOT_MATCHED" ? "needs-review" : "matched"}">
-            <div class="incentive-card-header"><div class="scheme-icon"><i data-lucide="${policy.icon}"></i></div><span class="incentive-tag">${escapeHtml(result.matchStatus)}</span></div>
-            <span class="incentive-chapter">${escapeHtml(policy.scope)}</span><h2>${escapeHtml(result.policyName)}</h2><p>${escapeHtml(policy.description)}</p>
-            <div class="incentive-score"><strong>${result.relevanceScore}/100</strong><span>Deterministic relevance score</span></div>
-            <h3>Potential support</h3><ul>${policy.benefits.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
-            <h3>Reasons</h3><p><strong>Matched conditions:</strong> ${result.matchedConditions.length ? escapeHtml(result.matchedConditions.join(", ")) : "None"}</p>
-            <p><strong>Missing fields:</strong> ${result.missingFields.length ? escapeHtml(result.missingFields.join(", ")) : "None"}</p>
-            <p><strong>Unverified fields:</strong> ${result.unverifiedFields.length ? escapeHtml(result.unverifiedFields.join(", ")) : "None"}</p>
-            <p><strong>Required documents:</strong> ${escapeHtml(result.requiredDocuments.join(", "))}</p>
-            <p><strong>Next action:</strong> ${escapeHtml(result.nextAction)}</p>
-            <div class="incentive-card-actions"><button type="button" class="secondary-btn" data-verify-information>Verify Information</button><button type="button" class="${alreadyAdded ? "secondary-btn remove-opportunity-button" : "primary-btn"}" data-add-opportunity="${policy.id}">${alreadyAdded ? "Remove from Opportunities" : "Add to Opportunities"}</button></div>
-            <a class="incentive-link" href="${escapeHtml(result.officialSource)}" target="_blank" rel="noreferrer">Official source ↗</a>
-            <p class="incentive-disclaimer">${escapeHtml(result.disclaimer)}</p>
-        </article>`;
-    }).join("");
-    document.querySelectorAll("[data-verify-information]").forEach(button => button.addEventListener("click", () => { window.location.href = "./information-vault.html"; }));
-    document.querySelectorAll("[data-add-opportunity]").forEach(button => button.addEventListener("click", () => {
-        const item = scored.find(entry => entry.policy.id === button.dataset.addOpportunity);
-        if (!item) return;
-        if (readOpportunities().some(opportunity => opportunity.id === item.policy.id)) removeOpportunity(item.policy.id);
-        else addOpportunity(item.policy, item.result);
-    }));
-    if (window.lucide) lucide.createIcons();
+    document.getElementById("reviewCount").textContent =
+        scored.length - matched;
+
+    document.getElementById("incentiveList").innerHTML =
+        scored.map(({ policy, result }) => {
+
+            const alreadyAdded = readOpportunities().some(
+                item => item.id === policy.id
+            );
+
+            if (alreadyAdded) {
+                savePolicyToVault(policy);
+            }
+
+            return `
+                <article class="incentive-card ${result.matchStatus === "NOT_MATCHED" ? "needs-review" : "matched"}">
+
+                    <div class="incentive-card-header">
+                        <div class="scheme-icon">
+                            <i data-lucide="${policy.icon}"></i>
+                        </div>
+
+                        <span class="incentive-tag">
+                            ${escapeHtml(result.matchStatus)}
+                        </span>
+                    </div>
+
+                    <span class="incentive-chapter">
+                        ${escapeHtml(policy.scope)}
+                    </span>
+
+                    <h2>
+                        ${escapeHtml(result.policyName)}
+                    </h2>
+
+                    <p>
+                        ${escapeHtml(policy.description)}
+                    </p>
+
+                    <div class="incentive-score">
+                        <strong>${result.relevanceScore}/100</strong>
+                        <span>Deterministic relevance score</span>
+                    </div>
+
+                    <h3>Potential support</h3>
+
+                    <ul>
+                        ${policy.benefits.map(item =>
+                            `<li>${escapeHtml(item)}</li>`
+                        ).join("")}
+                    </ul>
+
+                    <h3>Reasons</h3>
+
+                    <p>
+                        <strong>Matched conditions:</strong>
+                        ${
+                            result.matchedConditions.length
+                                ? escapeHtml(result.matchedConditions.join(", "))
+                                : "None"
+                        }
+                    </p>
+
+                    <p>
+                        <strong>Missing fields:</strong>
+                        ${
+                            result.missingFields.length
+                                ? escapeHtml(result.missingFields.join(", "))
+                                : "None"
+                        }
+                    </p>
+
+                    <p>
+                        <strong>Unverified fields:</strong>
+                        ${
+                            result.unverifiedFields.length
+                                ? escapeHtml(result.unverifiedFields.join(", "))
+                                : "None"
+                        }
+                    </p>
+
+                    <p>
+                        <strong>Required documents:</strong>
+                        ${escapeHtml(result.requiredDocuments.join(", "))}
+                    </p>
+
+                    <p>
+                        <strong>Next action:</strong>
+                        ${escapeHtml(result.nextAction)}
+                    </p>
+
+                    <div class="incentive-card-actions">
+
+                        <button
+                            type="button"
+                            class="secondary-btn"
+                            data-verify-information>
+                            Verify Information
+                        </button>
+
+                        <button
+                            type="button"
+                            class="${
+                                alreadyAdded
+                                    ? "secondary-btn remove-opportunity-button"
+                                    : "primary-btn"
+                            }"
+                            data-add-opportunity="${policy.id}">
+                            ${
+                                alreadyAdded
+                                    ? "Remove from Opportunities"
+                                    : "Add to Opportunities"
+                            }
+                        </button>
+
+                    </div>
+
+                    <a
+                        class="incentive-link"
+                        href="${escapeHtml(result.officialSource)}"
+                        target="_blank"
+                        rel="noreferrer">
+                        Official source ↗
+                    </a>
+
+                    <p class="incentive-disclaimer">
+                        ${escapeHtml(result.disclaimer)}
+                    </p>
+
+                </article>
+            `;
+        }).join("");
+
+    document
+        .querySelectorAll("[data-verify-information]")
+        .forEach(button => {
+            button.addEventListener("click", () => {
+                window.location.href = "./information-vault.html";
+            });
+        });
+
+    document
+        .querySelectorAll("[data-add-opportunity]")
+        .forEach(button => {
+
+            button.addEventListener("click", () => {
+
+                const item = scored.find(
+                    entry =>
+                        entry.policy.id ===
+                        button.dataset.addOpportunity
+                );
+
+                if (!item) return;
+
+                if (
+                    readOpportunities().some(
+                        opportunity =>
+                            opportunity.id === item.policy.id
+                    )
+                ) {
+                    removeOpportunity(item.policy.id);
+                } else {
+                    addOpportunity(item.policy, item.result);
+                }
+            });
+        });
+
+    if (window.lucide) {
+        lucide.createIcons();
+    }
 }
 
-document.getElementById("recalculateScore")?.addEventListener("click", render);
-document.getElementById("verifyInformation")?.addEventListener("click", () => {
-    window.location.href = "./information-vault.html";
-});
+async function handleRecalculateScore() {
+    const button = document.getElementById("recalculateScore");
+
+    if (!button || button.classList.contains("is-calculating")) {
+        return;
+    }
+
+    const text = button.querySelector(".recalculate-text");
+    const icon = button.querySelector(".recalculate-icon");
+
+    button.classList.add("is-calculating");
+    button.disabled = true;
+
+    if (text) {
+        text.textContent = "Recalculating...";
+    }
+
+    if (icon) {
+        icon.setAttribute("data-lucide", "refresh-cw");
+    }
+
+    if (window.lucide) {
+        lucide.createIcons();
+    }
+
+    try {
+        // Small delay to make the calculation process visible
+        // during the demo.
+        await new Promise(resolve => setTimeout(resolve, 1200));
+
+        // Read the latest Information Vault data NOW.
+        const latestCalculation = calculateLatestIncentives();
+
+        // Display the newly calculated results.
+        render(latestCalculation);
+
+        if (text) {
+            text.textContent = "Score Recalculated";
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 900));
+
+    } catch (error) {
+
+        console.error(
+            "Incentive score recalculation failed:",
+            error
+        );
+
+        if (text) {
+            text.textContent = "Recalculate Score";
+        }
+
+    } finally {
+
+        button.classList.remove("is-calculating");
+        button.disabled = false;
+
+        if (text) {
+            text.textContent = "Recalculate Score";
+        }
+
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+    }
+}
+
+document
+    .getElementById("recalculateScore")
+    ?.addEventListener(
+        "click",
+        handleRecalculateScore
+    );
+
+document
+    .getElementById("verifyInformation")
+    ?.addEventListener("click", () => {
+        window.location.href = "./information-vault.html";
+    });
+
+// Display the last calculated result.
+// Do NOT recalculate automatically.
 render();
