@@ -1,6 +1,8 @@
 const storageKey = "approvalguard.information-vault.business.v3";
 const incentiveVaultKey = "approvalguard.information-vault.incentives.v1";
 const verifiedProfileSeedKey = "approvalguard.information-vault.verified-seed.v1";
+const businessProfileSyncKey =
+    "approvalguard.information-vault.business-profile-sync.v1";
 
 const verifiedProfileDefaults = {
     business_name: "Sahyadri Pharma Solutions Pvt. Ltd.",
@@ -274,117 +276,155 @@ function loadRecords() {
 // =====================================================
 
 async function syncBusinessProfile() {
-
     try {
-
-        const response =
-            await fetch(
-                `${window.APPROVAL_GUARD_URL}/api/business/latest`
-            );
+        const response = await fetch(
+            `${window.APPROVAL_GUARD_URL}/api/business/latest`
+        );
 
         if (!response.ok) {
+            console.warn(
+                "Business Profile could not be loaded:",
+                response.status
+            );
             return;
         }
 
-        const result =
-            await response.json();
-
-        const business =
-            result.business;
+        const result = await response.json();
+        const business = result.business;
 
         if (!business) {
+            console.warn("No saved Business Profile was found.");
             return;
         }
 
         const profileFields = {
-
-            business_name:
-                business.businessName,
-
-            business_type:
-                business.businessType,
-
-            business_stage:
-                business.businessStage,
-
-            industry:
-                business.industry,
-
-            state:
-                business.state,
-
-            district:
-                business.district,
-
-            total_investment:
-                business.investment,
-
-            land_area:
-                business.landArea,
-
-            current_employees:
-                business.employees,
-
-            owner_name:
-                business.contactPerson,
-
-            email:
-                business.email,
-
-            phone_number:
-                business.phone
+            business_name: business.businessName,
+            business_type: business.businessType,
+            business_stage: business.businessStage,
+            industry: business.industry,
+            state: business.state,
+            district: business.district,
+            total_investment: business.investment,
+            land_area: business.landArea,
+            current_employees: business.employees,
+            owner_name: business.contactPerson,
+            email: business.email,
+            phone_number: business.phone
         };
 
-        Object.entries(
-            profileFields
-        ).forEach(([key, value]) => {
+        /*
+         * Read the Business Profile values that were synchronized
+         * during the previous sync.
+         */
+        let previousSyncedValues = {};
 
-            if (
-                value === undefined ||
-                value === null
-            ) {
+        try {
+            previousSyncedValues = JSON.parse(
+                localStorage.getItem(businessProfileSyncKey) || "{}"
+            );
+        } catch (error) {
+            previousSyncedValues = {};
+        }
+
+        let informationVaultChanged = false;
+
+        Object.entries(profileFields).forEach(([key, value]) => {
+
+            if (value === undefined || value === null) {
                 return;
             }
 
-            const fieldValue =
-                String(value);
+            if (!records[key]) {
+                return;
+            }
+
+            const newBusinessValue = String(value).trim();
+
+            if (!newBusinessValue) {
+                return;
+            }
+
+            const currentVaultValue =
+                String(records[key].fieldValue || "").trim();
+
+            const previousBusinessValue =
+                String(previousSyncedValues[key] || "").trim();
 
             /*
-             * Current behavior:
-             * only fill Information Vault
-             * fields that are empty.
+             * CASE 1:
+             * This field has never been synchronized before.
              *
-             * Business Profile overwrite logic
-             * will be handled separately.
+             * This is important for your default Information Vault.
+             * The Business Profile should replace the preset value.
              */
+            if (!previousSyncedValues.hasOwnProperty(key)) {
 
-            if (
-                records[key] &&
-                !records[key].fieldValue
-            ) {
+                records[key].fieldValue = newBusinessValue;
+                records[key].verificationStatus = "Unverified";
+                records[key].lastUpdated = now();
 
-                records[key].fieldValue =
-                    fieldValue;
+                previousSyncedValues[key] = newBusinessValue;
 
-                records[key].verificationStatus =
-                    "Unverified";
+                informationVaultChanged = true;
 
-                records[key].lastUpdated =
-                    now();
+                return;
             }
+
+            /*
+             * CASE 2:
+             * Business Profile has changed since the last sync.
+             *
+             * Example:
+             *
+             * Previous Business Profile:
+             * Sahyadri Pharma
+             *
+             * New Business Profile:
+             * ABC Pharma
+             *
+             * Information Vault should now become:
+             * ABC Pharma
+             */
+            if (newBusinessValue !== previousBusinessValue) {
+
+                records[key].fieldValue = newBusinessValue;
+                records[key].verificationStatus = "Unverified";
+                records[key].lastUpdated = now();
+
+                previousSyncedValues[key] = newBusinessValue;
+
+                informationVaultChanged = true;
+
+                return;
+            }
+
+            /*
+             * CASE 3:
+             * Business Profile has NOT changed.
+             *
+             * Do NOT overwrite the Information Vault.
+             *
+             * This allows the user to manually edit Information Vault.
+             */
         });
 
         /*
-         * Save the synced values locally only.
-         * Do NOT send them to MongoDB automatically.
+         * Remember the latest Business Profile values that were
+         * synchronized.
          */
+        localStorage.setItem(
+            businessProfileSyncKey,
+            JSON.stringify(previousSyncedValues)
+        );
 
-        persist();
+        if (informationVaultChanged) {
+            persist();
+        }
 
     } catch (error) {
 
         console.warn(
-            "Business profile could not be synced to the Information Vault.",
+            "Business Profile could not be synced to the Information Vault.",
             error
         );
     }
