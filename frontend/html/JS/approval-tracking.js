@@ -1,4 +1,5 @@
-const approvalTrackingApi = "/api/approval-tracking";
+const approvalTrackingApi =
+    "https://approvalguard-backend.onrender.com/api/approval-tracking";
 const portalStatuses = ["SUBMITTED", "UNDER_SCRUTINY", "DOCUMENT_VERIFICATION", "QUERY_RAISED", "APPROVED", "REJECTED"];
 let trackedApprovals = [];
 
