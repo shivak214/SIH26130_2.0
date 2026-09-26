@@ -1,6 +1,7 @@
 const storageKey = "approvalguard.information-vault.business.v3";
 const incentiveVaultKey = "approvalguard.information-vault.incentives.v1";
-const verifiedProfileSeedKey = "approvalguard.information-vault.verified-seed.v1";
+const verifiedProfileSeedKey =
+    "approvalguard.information-vault.verified-seed.v1";
 const businessProfileSyncKey =
     "approvalguard.information-vault.business-profile-sync.v1";
 
@@ -9,7 +10,8 @@ const verifiedProfileDefaults = {
     business_type: "Private Limited Company",
     industry: "Pharmaceutical Manufacturing",
     business_stage: "Expansion",
-    business_description: "Manufacturing generic pharmaceutical formulations and healthcare products for domestic markets.",
+    business_description:
+        "Manufacturing generic pharmaceutical formulations and healthcare products for domestic markets.",
     registration_number: "U24239MH2024PTC123456",
     gstin: "27AABCS1234F1Z5",
     pan: "AABCS1234F",
@@ -42,7 +44,12 @@ const fieldGroups = [
             ["business_type", "Business type", "text", false],
             ["industry", "Industry", "text", true],
             ["business_stage", "Business stage", "text", false],
-            ["business_description", "Business description", "textarea", false]
+            [
+                "business_description",
+                "Business description",
+                "textarea",
+                false
+            ]
         ]
     },
     {
@@ -50,10 +57,20 @@ const fieldGroups = [
         title: "Registration Details",
         icon: "badge-check",
         fields: [
-            ["registration_number", "Registration number", "text", false],
+            [
+                "registration_number",
+                "Registration number",
+                "text",
+                false
+            ],
             ["gstin", "GSTIN", "text", true],
             ["pan", "PAN", "text", true],
-            ["udyam_registration_number", "Udyam registration number", "text", false]
+            [
+                "udyam_registration_number",
+                "Udyam registration number",
+                "text",
+                false
+            ]
         ]
     },
     {
@@ -66,7 +83,13 @@ const fieldGroups = [
             ["district", "District", "text", false],
             ["pin_code", "PIN code", "text", true, "6 digits"],
             ["plot_number", "Plot number", "text", false],
-            ["land_area", "Land area", "number", false, "square metres"]
+            [
+                "land_area",
+                "Land area",
+                "number",
+                false,
+                "square metres"
+            ]
         ]
     },
     {
@@ -74,9 +97,24 @@ const fieldGroups = [
         title: "Financial Details",
         icon: "wallet-cards",
         fields: [
-            ["total_investment", "Total investment", "number", false],
-            ["annual_turnover", "Annual turnover", "number", false],
-            ["investment_in_machinery", "Investment in machinery", "number", false]
+            [
+                "total_investment",
+                "Total investment",
+                "number",
+                false
+            ],
+            [
+                "annual_turnover",
+                "Annual turnover",
+                "number",
+                false
+            ],
+            [
+                "investment_in_machinery",
+                "Investment in machinery",
+                "number",
+                false
+            ]
         ]
     },
     {
@@ -84,9 +122,24 @@ const fieldGroups = [
         title: "Employment Details",
         icon: "users",
         fields: [
-            ["current_employees", "Current employees", "number", false],
-            ["expected_employees", "Expected employees", "number", false],
-            ["skilled_employees", "Skilled employees", "number", false]
+            [
+                "current_employees",
+                "Current employees",
+                "number",
+                false
+            ],
+            [
+                "expected_employees",
+                "Expected employees",
+                "number",
+                false
+            ],
+            [
+                "skilled_employees",
+                "Skilled employees",
+                "number",
+                false
+            ]
         ]
     },
     {
@@ -95,9 +148,20 @@ const fieldGroups = [
         icon: "contact",
         fields: [
             ["owner_name", "Owner name", "text", false],
-            ["authorized_person", "Authorized person", "text", false],
+            [
+                "authorized_person",
+                "Authorized person",
+                "text",
+                false
+            ],
             ["email", "Email", "email", false],
-            ["phone_number", "Phone number", "tel", true, "10 digits"]
+            [
+                "phone_number",
+                "Phone number",
+                "tel",
+                true,
+                "10 digits"
+            ]
         ]
     }
 ];
@@ -108,18 +172,37 @@ const requiredKeys = fieldGroups.flatMap(group =>
         .map(field => field[0])
 );
 
-const allFields = fieldGroups.flatMap(group => group.fields);
+const allFields = fieldGroups.flatMap(
+    group => group.fields
+);
 
-const form = document.getElementById("businessInformationForm");
-const fieldSections = document.getElementById("fieldSections");
-const incentiveVaultSections = document.getElementById("incentiveVaultSections");
-const demoPortalLink = document.querySelector("[data-demo-portal-link]");
+const form =
+    document.getElementById(
+        "businessInformationForm"
+    );
+
+const fieldSections =
+    document.getElementById(
+        "fieldSections"
+    );
+
+const incentiveVaultSections =
+    document.getElementById(
+        "incentiveVaultSections"
+    );
+
+const demoPortalLink =
+    document.querySelector(
+        "[data-demo-portal-link]"
+    );
 
 if (demoPortalLink) {
-    demoPortalLink.href = window.DEMO_PORTAL_URL;
+    demoPortalLink.href =
+        window.DEMO_PORTAL_URL;
 }
 
 let isEditing = true;
+
 let records = loadRecords();
 
 
@@ -137,7 +220,6 @@ function now() {
 // =====================================================
 
 function createInitialRecords() {
-
     return Object.fromEntries(
         allFields.map(([key]) => [
             key,
@@ -157,62 +239,80 @@ function createInitialRecords() {
 // =====================================================
 
 function loadRecords() {
-
     try {
-
         const stored =
             JSON.parse(
-                localStorage.getItem(storageKey)
+                localStorage.getItem(
+                    storageKey
+                )
             );
 
-        if (stored && typeof stored === "object") {
-
+        if (
+            stored &&
+            typeof stored === "object"
+        ) {
             const initial =
                 createInitialRecords();
 
-            const records =
+            const loadedRecords =
                 Object.fromEntries(
-                    allFields.map(([key]) => {
+                    allFields.map(
+                        ([key]) => {
+                            const record =
+                                stored[key] ||
+                                initial[key];
 
-                        const record =
-                            stored[key] || initial[key];
-
-                        return [
-                            key,
-                            {
-                                ...initial[key],
-                                ...record,
-                                fieldValue:
-                                    String(
-                                        record.fieldValue ?? ""
-                                    ),
-                                verificationStatus:
-                                    record.verificationStatus ||
-                                    "Unverified"
-                            }
-                        ];
-                    })
+                            return [
+                                key,
+                                {
+                                    ...initial[key],
+                                    ...record,
+                                    fieldValue:
+                                        String(
+                                            record.fieldValue ??
+                                                ""
+                                        ),
+                                    verificationStatus:
+                                        record.verificationStatus ||
+                                        "Unverified"
+                                }
+                            ];
+                        }
+                    )
                 );
 
-            if (!localStorage.getItem(verifiedProfileSeedKey)) {
-
+            /*
+             * Seed demo defaults only once.
+             */
+            if (
+                !localStorage.getItem(
+                    verifiedProfileSeedKey
+                )
+            ) {
                 Object.entries(
                     verifiedProfileDefaults
-                ).forEach(([key, fieldValue]) => {
+                ).forEach(
+                    ([key, fieldValue]) => {
+                        if (!loadedRecords[key]) {
+                            return;
+                        }
 
-                    if (!records[key]) {
-                        return;
+                        loadedRecords[
+                            key
+                        ].fieldValue =
+                            fieldValue;
+
+                        loadedRecords[
+                            key
+                        ].verificationStatus =
+                            "Verified";
+
+                        loadedRecords[
+                            key
+                        ].lastUpdated =
+                            "2026-09-20T12:00:00.000Z";
                     }
-
-                    records[key].fieldValue =
-                        fieldValue;
-
-                    records[key].verificationStatus =
-                        "Verified";
-
-                    records[key].lastUpdated =
-                        "2026-09-20T12:00:00.000Z";
-                });
+                );
 
                 localStorage.setItem(
                     verifiedProfileSeedKey,
@@ -221,15 +321,15 @@ function loadRecords() {
 
                 localStorage.setItem(
                     storageKey,
-                    JSON.stringify(records)
+                    JSON.stringify(
+                        loadedRecords
+                    )
                 );
             }
 
-            return records;
+            return loadedRecords;
         }
-
     } catch (error) {
-
         console.warn(
             "Information Vault draft could not be loaded.",
             error
@@ -241,21 +341,22 @@ function loadRecords() {
 
     Object.entries(
         verifiedProfileDefaults
-    ).forEach(([key, fieldValue]) => {
+    ).forEach(
+        ([key, fieldValue]) => {
+            if (!initial[key]) {
+                return;
+            }
 
-        if (!initial[key]) {
-            return;
+            initial[key].fieldValue =
+                fieldValue;
+
+            initial[key].verificationStatus =
+                "Verified";
+
+            initial[key].lastUpdated =
+                "2026-09-20T12:00:00.000Z";
         }
-
-        initial[key].fieldValue =
-            fieldValue;
-
-        initial[key].verificationStatus =
-            "Verified";
-
-        initial[key].lastUpdated =
-            "2026-09-20T12:00:00.000Z";
-    });
+    );
 
     localStorage.setItem(
         verifiedProfileSeedKey,
@@ -277,9 +378,10 @@ function loadRecords() {
 
 async function syncBusinessProfile() {
     try {
-        const response = await fetch(
-            `${window.APPROVAL_GUARD_URL}/api/business/latest`
-        );
+        const response =
+            await fetch(
+                `${window.APPROVAL_GUARD_URL}/api/business/latest`
+            );
 
         if (!response.ok) {
             console.warn(
@@ -289,140 +391,187 @@ async function syncBusinessProfile() {
             return;
         }
 
-        const result = await response.json();
-        const business = result.business;
+        const result =
+            await response.json();
+
+        const business =
+            result.business;
 
         if (!business) {
-            console.warn("No saved Business Profile was found.");
+            console.warn(
+                "No saved Business Profile was found."
+            );
             return;
         }
 
         const profileFields = {
-            business_name: business.businessName,
-            business_type: business.businessType,
-            business_stage: business.businessStage,
-            industry: business.industry,
-            state: business.state,
-            district: business.district,
-            total_investment: business.investment,
-            land_area: business.landArea,
-            current_employees: business.employees,
-            owner_name: business.contactPerson,
-            email: business.email,
-            phone_number: business.phone
+            business_name:
+                business.businessName,
+
+            business_type:
+                business.businessType,
+
+            business_stage:
+                business.businessStage,
+
+            industry:
+                business.industry,
+
+            state:
+                business.state,
+
+            district:
+                business.district,
+
+            total_investment:
+                business.investment,
+
+            land_area:
+                business.landArea,
+
+            current_employees:
+                business.employees,
+
+            owner_name:
+                business.contactPerson,
+
+            email:
+                business.email,
+
+            phone_number:
+                business.phone
         };
 
-        /*
-         * Read the Business Profile values that were synchronized
-         * during the previous sync.
-         */
         let previousSyncedValues = {};
 
         try {
-            previousSyncedValues = JSON.parse(
-                localStorage.getItem(businessProfileSyncKey) || "{}"
-            );
+            previousSyncedValues =
+                JSON.parse(
+                    localStorage.getItem(
+                        businessProfileSyncKey
+                    ) || "{}"
+                );
         } catch (error) {
             previousSyncedValues = {};
         }
 
-        let informationVaultChanged = false;
+        let informationVaultChanged =
+            false;
 
-        Object.entries(profileFields).forEach(([key, value]) => {
+        Object.entries(
+            profileFields
+        ).forEach(
+            ([key, value]) => {
+                if (
+                    value === undefined ||
+                    value === null
+                ) {
+                    return;
+                }
 
-            if (value === undefined || value === null) {
-                return;
+                if (!records[key]) {
+                    return;
+                }
+
+                const newBusinessValue =
+                    String(value).trim();
+
+                if (!newBusinessValue) {
+                    return;
+                }
+
+                const previousBusinessValue =
+                    String(
+                        previousSyncedValues[
+                            key
+                        ] || ""
+                    ).trim();
+
+                /*
+                 * First synchronization.
+                 */
+                if (
+                    !Object.prototype.hasOwnProperty.call(
+                        previousSyncedValues,
+                        key
+                    )
+                ) {
+                    records[key].fieldValue =
+                        newBusinessValue;
+
+                    records[
+                        key
+                    ].verificationStatus =
+                        "Unverified";
+
+                    records[
+                        key
+                    ].lastUpdated =
+                        now();
+
+                    previousSyncedValues[
+                        key
+                    ] =
+                        newBusinessValue;
+
+                    informationVaultChanged =
+                        true;
+
+                    return;
+                }
+
+                /*
+                 * Business Profile changed.
+                 */
+                if (
+                    newBusinessValue !==
+                    previousBusinessValue
+                ) {
+                    records[key].fieldValue =
+                        newBusinessValue;
+
+                    records[
+                        key
+                    ].verificationStatus =
+                        "Unverified";
+
+                    records[
+                        key
+                    ].lastUpdated =
+                        now();
+
+                    previousSyncedValues[
+                        key
+                    ] =
+                        newBusinessValue;
+
+                    informationVaultChanged =
+                        true;
+
+                    return;
+                }
+
+                /*
+                 * Business Profile did not change.
+                 *
+                 * Therefore:
+                 * DO NOT overwrite manual
+                 * Information Vault edits.
+                 */
             }
+        );
 
-            if (!records[key]) {
-                return;
-            }
-
-            const newBusinessValue = String(value).trim();
-
-            if (!newBusinessValue) {
-                return;
-            }
-
-            const currentVaultValue =
-                String(records[key].fieldValue || "").trim();
-
-            const previousBusinessValue =
-                String(previousSyncedValues[key] || "").trim();
-
-            /*
-             * CASE 1:
-             * This field has never been synchronized before.
-             *
-             * This is important for your default Information Vault.
-             * The Business Profile should replace the preset value.
-             */
-            if (!previousSyncedValues.hasOwnProperty(key)) {
-
-                records[key].fieldValue = newBusinessValue;
-                records[key].verificationStatus = "Unverified";
-                records[key].lastUpdated = now();
-
-                previousSyncedValues[key] = newBusinessValue;
-
-                informationVaultChanged = true;
-
-                return;
-            }
-
-            /*
-             * CASE 2:
-             * Business Profile has changed since the last sync.
-             *
-             * Example:
-             *
-             * Previous Business Profile:
-             * Sahyadri Pharma
-             *
-             * New Business Profile:
-             * ABC Pharma
-             *
-             * Information Vault should now become:
-             * ABC Pharma
-             */
-            if (newBusinessValue !== previousBusinessValue) {
-
-                records[key].fieldValue = newBusinessValue;
-                records[key].verificationStatus = "Unverified";
-                records[key].lastUpdated = now();
-
-                previousSyncedValues[key] = newBusinessValue;
-
-                informationVaultChanged = true;
-
-                return;
-            }
-
-            /*
-             * CASE 3:
-             * Business Profile has NOT changed.
-             *
-             * Do NOT overwrite the Information Vault.
-             *
-             * This allows the user to manually edit Information Vault.
-             */
-        });
-
-        /*
-         * Remember the latest Business Profile values that were
-         * synchronized.
-         */
         localStorage.setItem(
             businessProfileSyncKey,
-            JSON.stringify(previousSyncedValues)
+            JSON.stringify(
+                previousSyncedValues
+            )
         );
 
         if (informationVaultChanged) {
             persist();
         }
-
     } catch (error) {
-
         console.warn(
             "Business Profile could not be synced to the Information Vault.",
             error
@@ -436,18 +585,17 @@ async function syncBusinessProfile() {
 // =====================================================
 
 function safeValue(value) {
-
-    return String(value ?? "")
-        .replace(
-            /[&<>"']/g,
-            character => ({
+    return String(value ?? "").replace(
+        /[&<>"']/g,
+        character =>
+            ({
                 "&": "&amp;",
                 "<": "&lt;",
                 ">": "&gt;",
                 "\"": "&quot;",
                 "'": "&#039;"
             }[character])
-        );
+    );
 }
 
 
@@ -456,9 +604,7 @@ function safeValue(value) {
 // =====================================================
 
 function loadIncentiveVaults() {
-
     try {
-
         const stored =
             JSON.parse(
                 localStorage.getItem(
@@ -470,9 +616,7 @@ function loadIncentiveVaults() {
             typeof stored === "object"
             ? stored
             : {};
-
     } catch (error) {
-
         console.warn(
             "Incentive Information Vault data could not be loaded.",
             error
@@ -483,17 +627,19 @@ function loadIncentiveVaults() {
 }
 
 
-function persistIncentiveVaults(policyVaults) {
-
+function persistIncentiveVaults(
+    policyVaults
+) {
     localStorage.setItem(
         incentiveVaultKey,
-        JSON.stringify(policyVaults)
+        JSON.stringify(
+            policyVaults
+        )
     );
 }
 
 
 function renderIncentiveVaults() {
-
     if (!incentiveVaultSections) {
         return;
     }
@@ -504,16 +650,15 @@ function renderIncentiveVaults() {
     incentiveVaultSections.innerHTML =
         Object.values(policyVaults)
             .map(policy => {
-
                 const fieldsMarkup =
                     Object.values(
                         policy.fields || {}
                     )
                         .map(field => {
-
                             const missing =
                                 !String(
-                                    field.fieldValue || ""
+                                    field.fieldValue ||
+                                        ""
                                 ).trim();
 
                             const requiredClass =
@@ -527,26 +672,53 @@ function renderIncentiveVaults() {
                                     <div class="field-label-row">
 
                                         <label
-                                            for="policy-${safeValue(policy.id)}-${safeValue(field.fieldName)}"
+                                            for="policy-${safeValue(
+                                                policy.id
+                                            )}-${safeValue(
+                                                field.fieldName
+                                            )}"
                                         >
-                                            ${safeValue(field.fieldLabel)}
-                                            <span aria-hidden="true">*</span>
+                                            ${safeValue(
+                                                field.fieldLabel
+                                            )}
+
+                                            <span aria-hidden="true">
+                                                *
+                                            </span>
                                         </label>
 
                                         <span
-                                            class="verification-badge ${statusClass(field.verificationStatus)}"
+                                            class="verification-badge ${statusClass(
+                                                field.verificationStatus
+                                            )}"
                                         >
-                                            ${safeValue(field.verificationStatus)}
+                                            ${safeValue(
+                                                field.verificationStatus
+                                            )}
                                         </span>
 
                                     </div>
 
                                     <input
-                                        id="policy-${safeValue(policy.id)}-${safeValue(field.fieldName)}"
-                                        data-policy-id="${safeValue(policy.id)}"
-                                        data-policy-field="${safeValue(field.fieldName)}"
-                                        value="${safeValue(field.fieldValue)}"
-                                        ${isEditing ? "" : "disabled"}
+                                        id="policy-${safeValue(
+                                            policy.id
+                                        )}-${safeValue(
+                                            field.fieldName
+                                        )}"
+                                        data-policy-id="${safeValue(
+                                            policy.id
+                                        )}"
+                                        data-policy-field="${safeValue(
+                                            field.fieldName
+                                        )}"
+                                        value="${safeValue(
+                                            field.fieldValue
+                                        )}"
+                                        ${
+                                            isEditing
+                                                ? ""
+                                                : "disabled"
+                                        }
                                     >
 
                                     <div class="field-meta">
@@ -560,7 +732,9 @@ function renderIncentiveVaults() {
                                         </span>
 
                                         <span>
-                                            Updated ${formatDate(field.lastUpdated)}
+                                            Updated ${formatDate(
+                                                field.lastUpdated
+                                            )}
                                         </span>
 
                                     </div>
@@ -586,12 +760,16 @@ function renderIncentiveVaults() {
                                 </span>
 
                                 <h2>
-                                    ${safeValue(policy.name)}
+                                    ${safeValue(
+                                        policy.name
+                                    )}
                                 </h2>
 
                                 <a
                                     class="portal-link"
-                                    href="${safeValue(policy.officialSource)}"
+                                    href="${safeValue(
+                                        policy.officialSource
+                                    )}"
                                     target="_blank"
                                     rel="noreferrer"
                                 >
@@ -603,9 +781,13 @@ function renderIncentiveVaults() {
                             <button
                                 type="button"
                                 class="remove-policy-vault"
-                                data-remove-policy="${safeValue(policy.id)}"
+                                data-remove-policy="${safeValue(
+                                    policy.id
+                                )}"
                                 title="Remove policy from Information Vault"
-                                aria-label="Remove ${safeValue(policy.name)} from Information Vault"
+                                aria-label="Remove ${safeValue(
+                                    policy.name
+                                )} from Information Vault"
                             >
                                 <i data-lucide="trash-2"></i>
                             </button>
@@ -621,28 +803,30 @@ function renderIncentiveVaults() {
             })
             .join("");
 
-
-    // Policy field changes
-
+    /*
+     * Policy field changes.
+     */
     incentiveVaultSections
-        .querySelectorAll("[data-policy-field]")
+        .querySelectorAll(
+            "[data-policy-field]"
+        )
         .forEach(control => {
-
             control.addEventListener(
                 "input",
                 event => {
-
                     const policyVaults =
                         loadIncentiveVaults();
 
                     const policy =
                         policyVaults[
-                            event.target.dataset.policyId
+                            event.target.dataset
+                                .policyId
                         ];
 
                     const field =
                         policy?.fields?.[
-                            event.target.dataset.policyField
+                            event.target.dataset
+                                .policyField
                         ];
 
                     if (!field) {
@@ -669,52 +853,64 @@ function renderIncentiveVaults() {
 
                     const missing =
                         !String(
-                            field.fieldValue || ""
+                            field.fieldValue ||
+                                ""
                         ).trim();
 
-                    wrapper.classList.toggle(
-                        "missing-policy-field",
-                        missing
-                    );
+                    if (wrapper) {
+                        wrapper.classList.toggle(
+                            "missing-policy-field",
+                            missing
+                        );
 
-                    wrapper.querySelector(
-                        ".required-marker"
-                    ).textContent =
-                        missing
-                            ? "Required information missing"
-                            : "Required policy information";
+                        const marker =
+                            wrapper.querySelector(
+                                ".required-marker"
+                            );
 
-                    wrapper.querySelector(
-                        ".verification-badge"
-                    ).textContent =
-                        field.verificationStatus;
+                        if (marker) {
+                            marker.textContent =
+                                missing
+                                    ? "Required information missing"
+                                    : "Required policy information";
+                        }
 
-                    wrapper.querySelector(
-                        ".verification-badge"
-                    ).className =
-                        `verification-badge ${statusClass(
-                            field.verificationStatus
-                        )}`;
+                        const badge =
+                            wrapper.querySelector(
+                                ".verification-badge"
+                            );
+
+                        if (badge) {
+                            badge.textContent =
+                                field.verificationStatus;
+
+                            badge.className =
+                                `verification-badge ${statusClass(
+                                    field.verificationStatus
+                                )}`;
+                        }
+                    }
                 }
             );
         });
 
-
-    // Remove policy
-
+    /*
+     * Remove policy.
+     */
     incentiveVaultSections
-        .querySelectorAll("[data-remove-policy]")
+        .querySelectorAll(
+            "[data-remove-policy]"
+        )
         .forEach(button => {
-
             button.addEventListener(
                 "click",
                 () => {
-
                     const policyVaults =
                         loadIncentiveVaults();
 
                     delete policyVaults[
-                        button.dataset.removePolicy
+                        button.dataset
+                            .removePolicy
                     ];
 
                     persistIncentiveVaults(
@@ -730,7 +926,6 @@ function renderIncentiveVaults() {
             );
         });
 
-
     if (window.lucide) {
         lucide.createIcons();
     }
@@ -742,13 +937,18 @@ function renderIncentiveVaults() {
 // =====================================================
 
 function formatDate(value) {
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return "Unknown";
+    }
 
     return new Intl.DateTimeFormat(
         "en-IN",
         {
             dateStyle: "medium"
         }
-    ).format(new Date(value));
+    ).format(date);
 }
 
 
@@ -757,7 +957,6 @@ function formatDate(value) {
 // =====================================================
 
 function statusClass(status) {
-
     return String(status || "")
         .toLowerCase()
         .replace(/\s+/g, "-");
@@ -769,7 +968,6 @@ function statusClass(status) {
 // =====================================================
 
 function renderFields() {
-
     if (!fieldSections) {
         return;
     }
@@ -777,7 +975,6 @@ function renderFields() {
     fieldSections.innerHTML =
         fieldGroups
             .map(group => {
-
                 const fieldsMarkup =
                     group.fields
                         .map(
@@ -788,7 +985,6 @@ function renderFields() {
                                 required,
                                 hint
                             ]) => {
-
                                 const record =
                                     records[key];
 
@@ -804,7 +1000,6 @@ function renderFields() {
 
                                 const control =
                                     type === "textarea"
-
                                         ? `
                                             <textarea
                                                 id="${key}"
@@ -812,18 +1007,22 @@ function renderFields() {
                                                 rows="3"
                                                 ${requiredAttribute}
                                                 ${disabledAttribute}
-                                            >${safeValue(record.fieldValue)}</textarea>
+                                            >${safeValue(
+                                                record.fieldValue
+                                            )}</textarea>
                                         `
-
                                         : `
                                             <input
                                                 id="${key}"
                                                 data-field-key="${key}"
                                                 type="${type}"
-                                                value="${safeValue(record.fieldValue)}"
+                                                value="${safeValue(
+                                                    record.fieldValue
+                                                )}"
                                                 ${requiredAttribute}
                                                 ${
-                                                    type === "number"
+                                                    type ===
+                                                    "number"
                                                         ? 'min="0"'
                                                         : ""
                                                 }
@@ -868,7 +1067,10 @@ function renderFields() {
                                         <div class="field-meta">
 
                                             <span>
-                                                ${hint || "Field value"}
+                                                ${
+                                                    hint ||
+                                                    "Field value"
+                                                }
                                             </span>
 
                                             <span>
@@ -925,24 +1127,32 @@ function renderFields() {
             })
             .join("");
 
-
     if (window.lucide) {
         lucide.createIcons();
     }
 
-
-    // Field changes
-
+    /*
+     * Field changes.
+     *
+     * Important:
+     * Typing changes the status back to Unverified.
+     * Save Changes will verify the information.
+     */
     fieldSections
-        .querySelectorAll("[data-field-key]")
+        .querySelectorAll(
+            "[data-field-key]"
+        )
         .forEach(control => {
-
             control.addEventListener(
                 "input",
                 event => {
-
                     const key =
-                        event.target.dataset.fieldKey;
+                        event.target.dataset
+                            .fieldKey;
+
+                    if (!records[key]) {
+                        return;
+                    }
 
                     records[key].fieldValue =
                         event.target.value;
@@ -954,8 +1164,7 @@ function renderFields() {
                         "Unverified";
 
                     /*
-                     * Save locally while typing.
-                     *
+                     * Local save while typing.
                      * MongoDB is NOT updated here.
                      */
                     persist();
@@ -972,7 +1181,6 @@ function renderFields() {
 // =====================================================
 
 function persist() {
-
     localStorage.setItem(
         storageKey,
         JSON.stringify(records)
@@ -985,9 +1193,7 @@ function persist() {
 // =====================================================
 
 async function publishVaultSnapshot() {
-
     try {
-
         const response =
             await fetch(
                 `${window.APPROVAL_GUARD_URL}/api/information-vault/snapshot`,
@@ -995,7 +1201,8 @@ async function publishVaultSnapshot() {
                     method: "PUT",
 
                     headers: {
-                        "Content-Type": "application/json"
+                        "Content-Type":
+                            "application/json"
                     },
 
                     body: JSON.stringify({
@@ -1005,16 +1212,13 @@ async function publishVaultSnapshot() {
             );
 
         if (!response.ok) {
-
             throw new Error(
                 `Information Vault API returned ${response.status}`
             );
         }
 
         return true;
-
     } catch (error) {
-
         console.error(
             "Information Vault could not be saved to the database:",
             error
@@ -1026,21 +1230,78 @@ async function publishVaultSnapshot() {
 
 
 // =====================================================
+// VERIFY INFORMATION VAULT ON SAVE
+// =====================================================
+
+function verifyInformationVaultRecords() {
+    const errors = validate();
+
+    /*
+     * Only non-empty AND valid fields
+     * become Verified.
+     *
+     * Empty fields remain Unverified.
+     *
+     * Invalid fields remain Unverified.
+     */
+    allFields.forEach(([key]) => {
+        if (!records[key]) {
+            return;
+        }
+
+        const value =
+            String(
+                records[key].fieldValue ?? ""
+            ).trim();
+
+        if (
+            value &&
+            !errors[key]
+        ) {
+            records[
+                key
+            ].verificationStatus =
+                "Verified";
+
+            records[
+                key
+            ].lastUpdated =
+                now();
+        } else {
+            records[
+                key
+            ].verificationStatus =
+                "Unverified";
+        }
+    });
+}
+
+
+// =====================================================
 // SAVE INFORMATION VAULT
 // =====================================================
 
-async function saveInformationVault() {
 
+
+async function saveInformationVault() {
+    /*
+     * First validate.
+     */
     const errors =
         validate();
 
+    /*
+     * Show current validation state.
+     */
     updateDashboard();
 
-
-    // Stop if validation errors exist
-
-    if (Object.keys(errors).length > 0) {
-
+    /*
+     * Do not save if required information
+     * or validation is incorrect.
+     */
+    if (
+        Object.keys(errors).length > 0
+    ) {
         setMessage(
             "Please fix the highlighted errors before saving.",
             "error"
@@ -1048,7 +1309,6 @@ async function saveInformationVault() {
 
         return;
     }
-
 
     const saveButton =
         document.getElementById(
@@ -1060,83 +1320,146 @@ async function saveInformationVault() {
             "saveInformationButtonText"
         );
 
-
     if (!saveButton) {
+        console.warn(
+            "Save Information button was not found."
+        );
+
         return;
     }
-
 
     const originalText =
         saveButtonText
             ? saveButtonText.textContent
             : "Save Changes";
 
-
     saveButton.disabled = true;
-    saveButton.classList.add("saving");
 
+    saveButton.classList.add(
+        "saving"
+    );
 
     if (saveButtonText) {
         saveButtonText.textContent =
             "Saving...";
     }
 
-
     try {
+        /*
+         * =================================================
+         * 1. VERIFY INFORMATION
+         * =================================================
+         *
+         * Every non-empty and valid field becomes
+         * Verified.
+         *
+         * Empty or invalid fields remain Unverified.
+         */
+        verifyInformationVaultRecords();
 
-        // Save latest version locally first
+        /*
+         * =================================================
+         * 2. REFRESH FIELD UI
+         * =================================================
+         *
+         * This is important.
+         *
+         * Without renderFields(), the underlying record
+         * would become Verified but the old Unverified
+         * badge could remain visible on screen.
+         */
+        renderFields();
 
+        /*
+         * =================================================
+         * 3. REFRESH DASHBOARD
+         * =================================================
+         *
+         * Updates:
+         * - Verified Fields
+         * - Progress
+         * - Overall status
+         * - Critical errors
+         */
+        updateDashboard();
+
+        /*
+         * =================================================
+         * 4. SAVE LOCALLY
+         * =================================================
+         *
+         * The verified state is persisted to localStorage.
+         */
         persist();
 
-
-        // Save to MongoDB
-
+        /*
+         * =================================================
+         * 5. SAVE TO MONGODB
+         * =================================================
+         *
+         * The same verified records are sent to the
+         * Information Vault API.
+         */
         const saved =
             await publishVaultSnapshot();
 
-
+        /*
+         * If the database request failed, do not show
+         * the success message.
+         */
         if (!saved) {
-
             throw new Error(
                 "MongoDB save request failed."
             );
         }
 
+        /*
+         * =================================================
+         * 6. FINAL DASHBOARD REFRESH
+         * =================================================
+         */
+        updateDashboard();
 
+        /*
+         * =================================================
+         * 7. SUCCESS MESSAGE
+         * =================================================
+         */
         setMessage(
-            "Information saved successfully.",
+            "Information saved and verified successfully.",
             "success"
         );
 
-
+        /*
+         * Existing success popup.
+         */
         showInformationSavePopup();
 
-
     } catch (error) {
-
         console.error(
             "Information Vault save failed:",
             error
         );
-
 
         setMessage(
             "Unable to save Information Vault. Please try again.",
             "error"
         );
 
-
     } finally {
-
-        saveButton.disabled = false;
+        /*
+         * =================================================
+         * RESTORE SAVE BUTTON
+         * =================================================
+         */
+        saveButton.disabled =
+            false;
 
         saveButton.classList.remove(
             "saving"
         );
 
-
         if (saveButtonText) {
-
             saveButtonText.textContent =
                 originalText;
         }
@@ -1149,24 +1472,21 @@ async function saveInformationVault() {
 // =====================================================
 
 function persistVaultState() {
-
     /*
      * Save locally.
      */
-
     persist();
-
 
     /*
      * Keep application tracking data
      * synchronized locally.
      */
-
     if (
-        typeof saveApplications === "function" &&
-        typeof getAllApplications === "function"
+        typeof saveApplications ===
+            "function" &&
+        typeof getAllApplications ===
+            "function"
     ) {
-
         saveApplications(
             getAllApplications()
         );
@@ -1179,43 +1499,34 @@ function persistVaultState() {
 // =====================================================
 
 function validate() {
-
     const errors = {};
 
     const value =
         key =>
             String(
-                records[key].fieldValue || ""
+                records[key]?.fieldValue ||
+                    ""
             ).trim();
 
-
     if (!value("business_name")) {
-
         errors.business_name =
             "Business name is required.";
     }
 
-
     if (!value("industry")) {
-
         errors.industry =
             "Industry is required.";
     }
 
-
     if (!value("gstin")) {
-
         errors.gstin =
             "GSTIN cannot be empty.";
     }
 
-
     if (!value("pan")) {
-
         errors.pan =
             "PAN cannot be empty.";
     }
-
 
     if (
         value("pin_code") &&
@@ -1223,11 +1534,9 @@ function validate() {
             value("pin_code")
         )
     ) {
-
         errors.pin_code =
             "PIN code must contain 6 digits.";
     }
-
 
     if (
         value("phone_number") &&
@@ -1235,11 +1544,9 @@ function validate() {
             value("phone_number")
         )
     ) {
-
         errors.phone_number =
             "Phone number must contain 10 digits.";
     }
-
 
     [
         "total_investment",
@@ -1250,7 +1557,6 @@ function validate() {
         "expected_employees",
         "skilled_employees"
     ].forEach(key => {
-
         if (
             value(key) &&
             (
@@ -1260,16 +1566,20 @@ function validate() {
                 Number(value(key)) < 0
             )
         ) {
+            const field =
+                allFields.find(
+                    field =>
+                        field[0] === key
+                );
 
             errors[key] =
                 `${
-                    allFields.find(
-                        field => field[0] === key
-                    )[1]
+                    field
+                        ? field[1]
+                        : key
                 } must be a valid non-negative number.`;
         }
     });
-
 
     return errors;
 }
@@ -1280,7 +1590,6 @@ function validate() {
 // =====================================================
 
 function updateDashboard() {
-
     const errors =
         validate();
 
@@ -1288,7 +1597,8 @@ function updateDashboard() {
         allFields.filter(
             ([key]) =>
                 String(
-                    records[key].fieldValue ?? ""
+                    records[key]?.fieldValue ??
+                        ""
                 ).trim()
         );
 
@@ -1299,7 +1609,8 @@ function updateDashboard() {
         requiredKeys.some(
             key =>
                 !String(
-                    records[key].fieldValue || ""
+                    records[key]?.fieldValue ||
+                        ""
                 ).trim()
         );
 
@@ -1309,21 +1620,27 @@ function updateDashboard() {
                 !errors[key]
         ).length;
 
+    /*
+     * IMPORTANT:
+     * This count is based ONLY on actual
+     * verification status.
+     */
     const verified =
         filledFields.filter(
             ([key]) =>
                 records[key]
-                    .verificationStatus ===
+                    ?.verificationStatus ===
                 "Verified"
         ).length;
 
     const progress =
         total
             ? Math.round(
-                (validFilledFields / total) * 100
+                (validFilledFields /
+                    total) *
+                    100
             )
             : 0;
-
 
     let status =
         "NEEDS REVIEW";
@@ -1331,12 +1648,10 @@ function updateDashboard() {
     let reason =
         "Information is entered but not verified.";
 
-
     if (
         Object.keys(errors).length ||
         missingRequired
     ) {
-
         status =
             "INCOMPLETE";
 
@@ -1344,22 +1659,18 @@ function updateDashboard() {
             Object.keys(errors).length
                 ? "Resolve the highlighted validation errors."
                 : "Complete all required fields.";
-
     } else if (
         filledFields.length > 0 &&
         verified === filledFields.length
     ) {
-
         status =
             "READY FOR ENGINE USE";
 
         reason =
             "All fields are verified and ready to reuse.";
-
     } else if (
         validFilledFields === total
     ) {
-
         status =
             "READY FOR VERIFICATION";
 
@@ -1367,80 +1678,110 @@ function updateDashboard() {
             "All fields are complete and ready for verification.";
     }
 
-
-    document.getElementById(
-        "overallStatus"
-    ).textContent = status;
-
-
-    document.getElementById(
-        "overallStatus"
-    ).className =
-        `dashboard-status ${statusClass(status)}`;
-
-
-    document.getElementById(
-        "statusReason"
-    ).textContent =
-        reason;
-
-
-    document.getElementById(
-        "progressValue"
-    ).textContent =
-        `${progress}%`;
-
-
-    document.getElementById(
-        "progressBar"
-    ).style.width =
-        `${progress}%`;
-
-
-    document.getElementById(
-        "totalFields"
-    ).textContent =
-        total;
-
-
-    document.getElementById(
-        "verifiedFields"
-    ).textContent =
-        verified || validFilledFields;
-
-
-    document.getElementById(
-        "pendingFields"
-    ).textContent =
-        total - validFilledFields;
-
-
-    document.getElementById(
-        "criticalErrors"
-    ).textContent =
-        Object.keys(errors).length;
-
-
-    Object.entries(errors)
-        .forEach(
-            ([key, message]) => {
-
-                const error =
-                    document.getElementById(
-                        `${key}Error`
-                    );
-
-                if (error) {
-                    error.textContent =
-                        message;
-                }
-            }
+    const overallStatus =
+        document.getElementById(
+            "overallStatus"
         );
 
+    if (overallStatus) {
+        overallStatus.textContent =
+            status;
+
+        overallStatus.className =
+            `dashboard-status ${statusClass(
+                status
+            )}`;
+    }
+
+    const statusReason =
+        document.getElementById(
+            "statusReason"
+        );
+
+    if (statusReason) {
+        statusReason.textContent =
+            reason;
+    }
+
+    const progressValue =
+        document.getElementById(
+            "progressValue"
+        );
+
+    if (progressValue) {
+        progressValue.textContent =
+            `${progress}%`;
+    }
+
+    const progressBar =
+        document.getElementById(
+            "progressBar"
+        );
+
+    if (progressBar) {
+        progressBar.style.width =
+            `${progress}%`;
+    }
+
+    const totalFields =
+        document.getElementById(
+            "totalFields"
+        );
+
+    if (totalFields) {
+        totalFields.textContent =
+            total;
+    }
+
+    const verifiedFields =
+        document.getElementById(
+            "verifiedFields"
+        );
+
+    if (verifiedFields) {
+        verifiedFields.textContent =
+            verified;
+    }
+
+    const pendingFields =
+        document.getElementById(
+            "pendingFields"
+        );
+
+    if (pendingFields) {
+        pendingFields.textContent =
+            total -
+            validFilledFields;
+    }
+
+    const criticalErrors =
+        document.getElementById(
+            "criticalErrors"
+        );
+
+    if (criticalErrors) {
+        criticalErrors.textContent =
+            Object.keys(errors).length;
+    }
+
+    Object.entries(
+        errors
+    ).forEach(
+        ([key, message]) => {
+            const error =
+                document.getElementById(
+                    `${key}Error`
+                );
+
+            if (error) {
+                error.textContent =
+                    message;
+            }
+        }
+    );
 
     allFields.forEach(
         ([key]) => {
-
             const error =
                 document.getElementById(
                     `${key}Error`
@@ -1450,7 +1791,6 @@ function updateDashboard() {
                 error &&
                 !errors[key]
             ) {
-
                 error.textContent =
                     "";
             }
@@ -1467,7 +1807,6 @@ function setMessage(
     message,
     type = "success"
 ) {
-
     const element =
         document.getElementById(
             "vaultMessage"
@@ -1490,34 +1829,37 @@ function setMessage(
 // =====================================================
 
 function setStatuses(status) {
-
     const errors =
         validate();
 
     allFields.forEach(
         ([key]) => {
-
             if (
                 String(
-                    records[key].fieldValue || ""
+                    records[key]?.fieldValue ||
+                        ""
                 ).trim() &&
                 !errors[key]
             ) {
-
-                records[key].verificationStatus =
+                records[
+                    key
+                ].verificationStatus =
                     status;
 
-                records[key].lastUpdated =
+                records[
+                    key
+                ].lastUpdated =
                     now();
-
-            } else if (errors[key]) {
-
-                records[key].verificationStatus =
+            } else if (
+                errors[key]
+            ) {
+                records[
+                    key
+                ].verificationStatus =
                     "Unverified";
             }
         }
     );
-
 
     persistVaultState();
 
@@ -1525,13 +1867,10 @@ function setStatuses(status) {
 
     updateDashboard();
 
-
     let trackingApplications =
         getAllApplications();
 
-
     const statusColors = {
-
         APPROVED: "green",
         SUBMITTED: "blue",
         UNDER_REVIEW: "purple",
@@ -1548,131 +1887,172 @@ function setStatuses(status) {
         EXPIRED: "red"
     };
 
-
     function displayStatus(status) {
-
-        return status.replaceAll(
+        return String(
+            status || ""
+        ).replaceAll(
             "_",
             " "
         );
     }
 
-
     function renderTrackingFilters() {
-
         const fill =
             (id, values) => {
-
                 const select =
-                    document.getElementById(id);
+                    document.getElementById(
+                        id
+                    );
+
+                if (!select) {
+                    return;
+                }
 
                 const selected =
                     select.value;
 
                 while (
-                    select.options.length > 1
+                    select.options.length >
+                    1
                 ) {
-
                     select.remove(1);
                 }
 
                 [
-                    ...new Set(values)
+                    ...new Set(
+                        values.filter(Boolean)
+                    )
                 ]
                     .sort()
-                    .forEach(value => {
-
-                        select.insertAdjacentHTML(
-                            "beforeend",
-                            `
-                                <option value="${safeValue(value)}">
-                                    ${safeValue(
-                                        displayStatus(value)
-                                    )}
-                                </option>
-                            `
-                        );
-                    });
-
+                    .forEach(
+                        value => {
+                            select.insertAdjacentHTML(
+                                "beforeend",
+                                `
+                                    <option value="${safeValue(
+                                        value
+                                    )}">
+                                        ${safeValue(
+                                            displayStatus(
+                                                value
+                                            )
+                                        )}
+                                    </option>
+                                `
+                            );
+                        }
+                    );
 
                 if (
                     [
                         ...select.options
                     ].some(
                         option =>
-                            option.value === selected
+                            option.value ===
+                            selected
                     )
                 ) {
-
                     select.value =
                         selected;
                 }
             };
 
-
-        fill(
-            "approvalStatusFilter",
-            APPROVAL_STATUSES
-        );
+        if (
+            typeof APPROVAL_STATUSES !==
+            "undefined"
+        ) {
+            fill(
+                "approvalStatusFilter",
+                APPROVAL_STATUSES
+            );
+        }
 
         fill(
             "approvalDepartmentFilter",
             trackingApplications.map(
-                item => item.department
+                item =>
+                    item.department
             )
         );
 
         fill(
             "approvalLevelFilter",
             trackingApplications.map(
-                item => item.level
+                item =>
+                    item.level
             )
         );
 
         fill(
             "approvalActionFilter",
             trackingApplications.map(
-                item => item.nextAction
+                item =>
+                    item.nextAction
             )
         );
     }
 
-
     function filteredApplications() {
+        const searchElement =
+            document.getElementById(
+                "approvalSearch"
+            );
 
-        const search =
-            document
-                .getElementById(
-                    "approvalSearch"
-                )
-                .value
-                .toLowerCase();
-
-        const status =
+        const statusElement =
             document.getElementById(
                 "approvalStatusFilter"
-            ).value;
+            );
 
-        const department =
+        const departmentElement =
             document.getElementById(
                 "approvalDepartmentFilter"
-            ).value;
+            );
 
-        const level =
+        const levelElement =
             document.getElementById(
                 "approvalLevelFilter"
-            ).value;
+            );
 
-        const action =
+        const actionElement =
             document.getElementById(
                 "approvalActionFilter"
-            ).value;
+            );
 
-        const sort =
+        const sortElement =
             document.getElementById(
                 "approvalSort"
-            ).value;
+            );
 
+        const search =
+            searchElement
+                ? searchElement.value
+                    .toLowerCase()
+                : "";
+
+        const status =
+            statusElement
+                ? statusElement.value
+                : "";
+
+        const department =
+            departmentElement
+                ? departmentElement.value
+                : "";
+
+        const level =
+            levelElement
+                ? levelElement.value
+                : "";
+
+        const action =
+            actionElement
+                ? actionElement.value
+                : "";
+
+        const sort =
+            sortElement
+                ? sortElement.value
+                : "lastCheckedAt";
 
         return trackingApplications
             .filter(
@@ -1685,37 +2065,39 @@ function setStatuses(status) {
                     ) &&
                     (
                         !status ||
-                        item.currentStatus === status
+                        item.currentStatus ===
+                            status
                     ) &&
                     (
                         !department ||
-                        item.department === department
+                        item.department ===
+                            department
                     ) &&
                     (
                         !level ||
-                        item.level === level
+                        item.level ===
+                            level
                     ) &&
                     (
                         !action ||
-                        item.nextAction === action
+                        item.nextAction ===
+                            action
                     )
             )
             .sort(
                 (a, b) =>
                     new Date(
                         b[sort] ||
-                        "9999-12-31"
+                            "9999-12-31"
                     ) -
                     new Date(
                         a[sort] ||
-                        "9999-12-31"
+                            "9999-12-31"
                     )
             );
     }
 
-
     function renderTracking() {
-
         trackingApplications =
             applyDependencyBlocking(
                 getAllApplications()
@@ -1725,7 +2107,6 @@ function setStatuses(status) {
             trackingApplications
         );
 
-
         const total =
             trackingApplications.length;
 
@@ -1733,237 +2114,287 @@ function setStatuses(status) {
             status =>
                 trackingApplications.filter(
                     item =>
-                        item.currentStatus === status
+                        item.currentStatus ===
+                        status
                 ).length;
 
+        const trackingTotal =
+            document.getElementById(
+                "trackingTotal"
+            );
 
-        document.getElementById(
-            "trackingTotal"
-        ).textContent =
-            total;
+        if (trackingTotal) {
+            trackingTotal.textContent =
+                total;
+        }
 
+        const trackingApproved =
+            document.getElementById(
+                "trackingApproved"
+            );
 
-        document.getElementById(
-            "trackingApproved"
-        ).textContent =
-            count("APPROVED");
+        if (trackingApproved) {
+            trackingApproved.textContent =
+                count("APPROVED");
+        }
 
+        const trackingReview =
+            document.getElementById(
+                "trackingReview"
+            );
 
-        document.getElementById(
-            "trackingReview"
-        ).textContent =
-            count("UNDER_REVIEW");
+        if (trackingReview) {
+            trackingReview.textContent =
+                count(
+                    "UNDER_REVIEW"
+                );
+        }
 
+        const trackingDocuments =
+            document.getElementById(
+                "trackingDocuments"
+            );
 
-        document.getElementById(
-            "trackingDocuments"
-        ).textContent =
-            count("DOCUMENT_REQUIRED") +
-            count("DOCUMENT_PENDING");
+        if (trackingDocuments) {
+            trackingDocuments.textContent =
+                count(
+                    "DOCUMENT_REQUIRED"
+                ) +
+                count(
+                    "DOCUMENT_PENDING"
+                );
+        }
 
+        const trackingBlocked =
+            document.getElementById(
+                "trackingBlocked"
+            );
 
-        document.getElementById(
-            "trackingBlocked"
-        ).textContent =
-            count("BLOCKED");
+        if (trackingBlocked) {
+            trackingBlocked.textContent =
+                count("BLOCKED");
+        }
 
+        const trackingRenewals =
+            document.getElementById(
+                "trackingRenewals"
+            );
 
-        document.getElementById(
-            "trackingRenewals"
-        ).textContent =
-            count("RENEWAL_REQUIRED");
-
+        if (trackingRenewals) {
+            trackingRenewals.textContent =
+                count(
+                    "RENEWAL_REQUIRED"
+                );
+        }
 
         const progress =
             total
                 ? Math.round(
-                    (count("APPROVED") /
+                    (count(
+                        "APPROVED"
+                    ) /
                         total) *
-                    100
+                        100
                 )
                 : 0;
 
+        const trackingProgress =
+            document.getElementById(
+                "trackingProgress"
+            );
 
-        document.getElementById(
-            "trackingProgress"
-        ).textContent =
-            `${progress}%`;
+        if (trackingProgress) {
+            trackingProgress.textContent =
+                `${progress}%`;
+        }
 
+        const trackingProgressBar =
+            document.getElementById(
+                "trackingProgressBar"
+            );
 
-        document.getElementById(
-            "trackingProgressBar"
-        ).style.width =
-            `${progress}%`;
+        if (trackingProgressBar) {
+            trackingProgressBar.style.width =
+                `${progress}%`;
+        }
 
+        const approvalCards =
+            document.getElementById(
+                "approvalCards"
+            );
 
-        document.getElementById(
-            "approvalCards"
-        ).innerHTML =
+        if (!approvalCards) {
+            return;
+        }
+
+        approvalCards.innerHTML =
             filteredApplications()
-                .map(application => {
+                .map(
+                    application => {
+                        const dependency =
+                            getDependencyState(
+                                application,
+                                trackingApplications
+                            );
 
-                    const dependency =
-                        getDependencyState(
-                            application,
-                            trackingApplications
-                        );
+                        const dependencyText =
+                            dependency
+                                .incomplete
+                                .length
+                                ? `Blocked by: ${dependency.incomplete
+                                    .map(
+                                        item =>
+                                            item.approvalName
+                                    )
+                                    .join(
+                                        ", "
+                                    )}`
+                                : "All prerequisites approved";
 
-                    const dependencyText =
-                        dependency.incomplete.length
-                            ? `Blocked by: ${dependency.incomplete
-                                .map(
-                                    item =>
-                                        item.approvalName
-                                )
-                                .join(", ")}`
-                            : "All prerequisites approved";
+                        return `
+                            <article class="approval-card">
 
+                                <div class="approval-card-header">
 
-                    return `
-                        <article class="approval-card">
+                                    <div>
 
-                            <div class="approval-card-header">
+                                        <span class="demo-badge">
+                                            DEMO MODE
+                                        </span>
 
-                                <div>
+                                        <h3>
+                                            ${safeValue(
+                                                application.approvalName
+                                            )}
+                                        </h3>
 
-                                    <span class="demo-badge">
-                                        DEMO MODE
+                                        <p>
+                                            ${safeValue(
+                                                application.department
+                                            )}
+                                        </p>
+
+                                    </div>
+
+                                    <span
+                                        class="approval-status-badge ${
+                                            statusColors[
+                                                application.currentStatus
+                                            ] ||
+                                            "gray"
+                                        }"
+                                    >
+                                        ${displayStatus(
+                                            application.currentStatus
+                                        )}
                                     </span>
-
-                                    <h3>
-                                        ${safeValue(
-                                            application.approvalName
-                                        )}
-                                    </h3>
-
-                                    <p>
-                                        ${safeValue(
-                                            application.department
-                                        )}
-                                    </p>
 
                                 </div>
 
-                                <span
-                                    class="approval-status-badge ${
-                                        statusColors[
-                                            application.currentStatus
-                                        ] || "gray"
-                                    }"
-                                >
-                                    ${displayStatus(
-                                        application.currentStatus
-                                    )}
-                                </span>
+                                <div class="approval-card-grid">
 
-                            </div>
+                                    <span>
+                                        <b>Application</b>
+                                        ${safeValue(
+                                            application.applicationNumber
+                                        )}
+                                    </span>
 
+                                    <span>
+                                        <b>Submitted</b>
+                                        ${safeValue(
+                                            application.submittedDate
+                                        )}
+                                    </span>
 
-                            <div class="approval-card-grid">
+                                    <span>
+                                        <b>Last checked</b>
+                                        ${new Date(
+                                            application.lastCheckedAt
+                                        ).toLocaleString(
+                                            "en-IN"
+                                        )}
+                                    </span>
 
-                                <span>
-                                    <b>Application</b>
-                                    ${safeValue(
-                                        application.applicationNumber
-                                    )}
-                                </span>
+                                    <span>
+                                        <b>Next action</b>
+                                        ${safeValue(
+                                            application.nextAction
+                                        )}
+                                    </span>
 
-                                <span>
-                                    <b>Submitted</b>
-                                    ${safeValue(
-                                        application.submittedDate
-                                    )}
-                                </span>
+                                </div>
 
-                                <span>
-                                    <b>Last checked</b>
-                                    ${new Date(
-                                        application.lastCheckedAt
-                                    ).toLocaleString("en-IN")}
-                                </span>
-
-                                <span>
-                                    <b>Next action</b>
-                                    ${safeValue(
-                                        application.nextAction
-                                    )}
-                                </span>
-
-                            </div>
-
-
-                            <div
-                                class="approval-dependency ${
-                                    dependency.blocked
-                                        ? "blocked"
-                                        : ""
-                                }"
-                            >
-
-                                <i
-                                    data-lucide="${
+                                <div
+                                    class="approval-dependency ${
                                         dependency.blocked
-                                            ? "lock-keyhole"
-                                            : "check-circle-2"
+                                            ? "blocked"
+                                            : ""
                                     }"
-                                ></i>
-
-                                ${safeValue(
-                                    dependencyText
-                                )}
-
-                            </div>
-
-
-                            <div class="approval-card-actions">
-
-                                <button
-                                    class="secondary-btn tracking-action"
-                                    data-action="details"
-                                    data-id="${application.approvalId}"
                                 >
-                                    View Timeline
-                                </button>
 
-                                <button
-                                    class="secondary-btn tracking-action"
-                                    data-action="simulate"
-                                    data-id="${application.approvalId}"
-                                >
-                                    Simulate Status Update
-                                </button>
+                                    <i
+                                        data-lucide="${
+                                            dependency.blocked
+                                                ? "lock-keyhole"
+                                                : "check-circle-2"
+                                        }"
+                                    ></i>
 
-                                <button
-                                    class="secondary-btn tracking-action"
-                                    data-action="remark"
-                                    data-id="${application.approvalId}"
-                                >
-                                    Add Remark
-                                </button>
+                                    ${safeValue(
+                                        dependencyText
+                                    )}
 
-                            </div>
+                                </div>
 
-                        </article>
-                    `;
-                })
-                .join("")
-                ||
-                `
-                    <div class="tracking-empty">
+                                <div class="approval-card-actions">
 
-                        <i data-lucide="search-x"></i>
+                                    <button
+                                        class="secondary-btn tracking-action"
+                                        data-action="details"
+                                        data-id="${application.approvalId}"
+                                    >
+                                        View Timeline
+                                    </button>
 
-                        <strong>
-                            No approvals match these filters.
-                        </strong>
+                                    <button
+                                        class="secondary-btn tracking-action"
+                                        data-action="simulate"
+                                        data-id="${application.approvalId}"
+                                    >
+                                        Simulate Status Update
+                                    </button>
 
-                        <span>
-                            Try clearing a filter or search term.
-                        </span>
+                                    <button
+                                        class="secondary-btn tracking-action"
+                                        data-action="remark"
+                                        data-id="${application.approvalId}"
+                                    >
+                                        Add Remark
+                                    </button>
 
-                    </div>
-                `;
+                                </div>
 
+                            </article>
+                        `;
+                    }
+                )
+                .join("") ||
+            `
+                <div class="tracking-empty">
+
+                    <i data-lucide="search-x"></i>
+
+                    <strong>
+                        No approvals match these filters.
+                    </strong>
+
+                    <span>
+                        Try clearing a filter or search term.
+                    </span>
+
+                </div>
+            `;
 
         document
             .querySelectorAll(
@@ -1975,12 +2406,13 @@ function setStatuses(status) {
                         "click",
                         () =>
                             trackingAction(
-                                button.dataset.action,
-                                button.dataset.id
+                                button.dataset
+                                    .action,
+                                button.dataset
+                                    .id
                             )
                     )
             );
-
 
         if (window.lucide) {
             lucide.createIcons();
@@ -1989,16 +2421,18 @@ function setStatuses(status) {
         renderNotifications();
     }
 
-
     function showTrackingToast(
         message,
         error = false
     ) {
-
         const toast =
             document.getElementById(
                 "trackingToast"
             );
+
+        if (!toast) {
+            return;
+        }
 
         toast.textContent =
             message;
@@ -2007,7 +2441,6 @@ function setStatuses(status) {
             `tracking-toast visible ${
                 error ? "error" : ""
             }`;
-
 
         window.setTimeout(
             () =>
@@ -2018,9 +2451,7 @@ function setStatuses(status) {
         );
     }
 
-
     function ensureTrackingModal() {
-
         if (
             document.getElementById(
                 "approvalDetailsModal"
@@ -2028,7 +2459,6 @@ function setStatuses(status) {
         ) {
             return;
         }
-
 
         document.body.insertAdjacentHTML(
             "beforeend",
@@ -2056,7 +2486,6 @@ function setStatuses(status) {
             `
         );
 
-
         document
             .getElementById(
                 "closeApprovalModal"
@@ -2064,7 +2493,6 @@ function setStatuses(status) {
             .addEventListener(
                 "click",
                 () => {
-
                     document.getElementById(
                         "approvalDetailsModal"
                     ).hidden = true;
@@ -2072,22 +2500,22 @@ function setStatuses(status) {
             );
     }
 
-
     function showDetails(id) {
-
         const application =
             getApplicationById(id);
+
+        if (!application) {
+            return;
+        }
 
         ensureTrackingModal();
 
         const timeline =
             getApplicationTimeline(id);
 
-
         document.getElementById(
             "approvalDetails"
         ).innerHTML = `
-
             <span class="demo-badge">
                 DEMO MODE · SIMULATED STATUS SOURCE
             </span>
@@ -2107,7 +2535,6 @@ function setStatuses(status) {
                     application.applicationNumber
                 )}
             </p>
-
 
             <div class="modal-detail-grid">
 
@@ -2173,12 +2600,11 @@ function setStatuses(status) {
                     <b>Remarks</b>
                     ${safeValue(
                         application.remarks ||
-                        "No remarks"
+                            "No remarks"
                     )}
                 </span>
 
             </div>
-
 
             <div class="modal-actions">
 
@@ -2224,11 +2650,9 @@ function setStatuses(status) {
 
             </div>
 
-
             <h3 class="timeline-title">
                 Status timeline
             </h3>
-
 
             <div class="status-timeline">
 
@@ -2260,7 +2684,9 @@ function setStatuses(status) {
                                     <small>
                                         ${new Date(
                                             event.eventDate
-                                        ).toLocaleString("en-IN")}
+                                        ).toLocaleString(
+                                            "en-IN"
+                                        )}
                                         ·
                                         ${safeValue(
                                             event.changedBy
@@ -2281,7 +2707,6 @@ function setStatuses(status) {
             </div>
         `;
 
-
         document
             .querySelectorAll(
                 ".tracking-modal-action"
@@ -2292,71 +2717,69 @@ function setStatuses(status) {
                         "click",
                         () =>
                             trackingAction(
-                                button.dataset.action,
-                                button.dataset.id
+                                button.dataset
+                                    .action,
+                                button.dataset
+                                    .id
                             )
                     )
             );
 
+        const modal =
+            document.getElementById(
+                "approvalDetailsModal"
+            );
 
-        document.getElementById(
-            "approvalDetailsModal"
-        ).hidden = false;
-
+        if (modal) {
+            modal.hidden = false;
+        }
 
         if (window.lucide) {
             lucide.createIcons();
         }
     }
 
-
     function trackingAction(
         action,
         id
     ) {
-
         try {
-
             const application =
                 getApplicationById(id);
 
+            if (!application) {
+                throw new Error(
+                    "Application not found."
+                );
+            }
 
             if (action === "details") {
                 return showDetails(id);
             }
 
-
             if (action === "simulate") {
                 simulateStatusUpdate(id);
             }
 
-
             if (action === "upload") {
-
                 if (
                     !Array.isArray(
                         application.documentsSubmitted
                     )
                 ) {
-
                     application.documentsSubmitted =
                         [];
                 }
 
-
                 if (
-                    !application.documentsSubmitted
-                        .includes(
-                            "Fire-safety demo document"
-                        )
+                    !application.documentsSubmitted.includes(
+                        "Fire-safety demo document"
+                    )
                 ) {
-
-                    application.documentsSubmitted
-                        .push(
-                            "Fire-safety demo document"
-                        );
+                    application.documentsSubmitted.push(
+                        "Fire-safety demo document"
+                    );
                 }
-
 
                 updateApplicationStatus(
                     id,
@@ -2365,9 +2788,7 @@ function setStatuses(status) {
                 );
             }
 
-
             if (action === "check") {
-
                 updateApplication(
                     id,
                     {}
@@ -2379,30 +2800,26 @@ function setStatuses(status) {
                 );
             }
 
-
             if (action === "remark") {
-
                 const remark =
                     window.prompt(
                         "Add a remark",
-                        application.remarks || ""
+                        application.remarks ||
+                            ""
                     );
 
-
                 if (remark !== null) {
-
                     updateApplication(
                         id,
                         {
-                            remarks: remark
+                            remarks:
+                                remark
                         }
                     );
                 }
             }
 
-
             if (action === "renew") {
-
                 updateApplicationStatus(
                     id,
                     "RENEWAL_REQUIRED",
@@ -2410,27 +2827,20 @@ function setStatuses(status) {
                 );
             }
 
-
             renderTracking();
-
 
             showTrackingToast(
                 `${application.approvalName} updated.`
             );
-
 
             if (
                 document.getElementById(
                     "approvalDetailsModal"
                 )
             ) {
-
                 showDetails(id);
             }
-
-
         } catch (error) {
-
             showTrackingToast(
                 error.message,
                 true
@@ -2438,9 +2848,7 @@ function setStatuses(status) {
         }
     }
 
-
     function renderNotifications() {
-
         const notifications =
             getApplicationNotifications();
 
@@ -2449,18 +2857,27 @@ function setStatuses(status) {
                 item => !item.read
             ).length;
 
+        const notificationCount =
+            document.getElementById(
+                "notificationCount"
+            );
 
-        document.getElementById(
-            "notificationCount"
-        ).textContent =
-            unread;
+        if (notificationCount) {
+            notificationCount.textContent =
+                unread;
+        }
 
+        const notificationList =
+            document.getElementById(
+                "notificationList"
+            );
 
-        document.getElementById(
-            "notificationList"
-        ).innerHTML =
+        if (!notificationList) {
+            return;
+        }
+
+        notificationList.innerHTML =
             notifications.length
-
                 ? notifications
                     .map(
                         item =>
@@ -2514,13 +2931,11 @@ function setStatuses(status) {
                             `
                     )
                     .join("")
-
                 : `
                     <p class="tracking-empty">
                         No notifications yet.
                     </p>
                 `;
-
 
         document
             .querySelectorAll(
@@ -2531,7 +2946,6 @@ function setStatuses(status) {
                     button.addEventListener(
                         "click",
                         () => {
-
                             markNotificationAsRead(
                                 button.dataset
                                     .notificationId
@@ -2543,11 +2957,9 @@ function setStatuses(status) {
             );
     }
 
-
     renderTrackingFilters();
 
     renderTracking();
-
 
     [
         "approvalSearch",
@@ -2557,49 +2969,65 @@ function setStatuses(status) {
         "approvalActionFilter",
         "approvalSort"
     ].forEach(id => {
+        const element =
+            document.getElementById(
+                id
+            );
 
-        document
-            .getElementById(id)
-            .addEventListener(
+        if (element) {
+            element.addEventListener(
                 "input",
                 renderTracking
             );
+        }
     });
 
-
-    document
-        .getElementById(
+    const notificationButton =
+        document.getElementById(
             "notificationButton"
-        )
-        .addEventListener(
+        );
+
+    if (notificationButton) {
+        notificationButton.addEventListener(
             "click",
             () => {
-
-                document.getElementById(
-                    "notificationPanel"
-                ).hidden =
-                    !document.getElementById(
+                const panel =
+                    document.getElementById(
                         "notificationPanel"
-                    ).hidden;
+                    );
+
+                if (!panel) {
+                    return;
+                }
+
+                panel.hidden =
+                    !panel.hidden;
 
                 renderNotifications();
             }
         );
+    }
 
-
-    document
-        .getElementById(
+    const closeNotifications =
+        document.getElementById(
             "closeNotifications"
-        )
-        .addEventListener(
+        );
+
+    if (closeNotifications) {
+        closeNotifications.addEventListener(
             "click",
             () => {
+                const panel =
+                    document.getElementById(
+                        "notificationPanel"
+                    );
 
-                document.getElementById(
-                    "notificationPanel"
-                ).hidden = true;
+                if (panel) {
+                    panel.hidden = true;
+                }
             }
         );
+    }
 }
 
 
@@ -2613,30 +3041,24 @@ const editButton =
     );
 
 if (editButton) {
-
     editButton.addEventListener(
         "click",
         () => {
-
             isEditing =
                 !isEditing;
-
 
             editButton.innerHTML =
                 isEditing
                     ? '<i data-lucide="lock-open"></i> Editing'
                     : '<i data-lucide="pencil"></i> Edit';
 
-
             renderFields();
-
 
             setMessage(
                 isEditing
                     ? "Fields are editable. Changes are saved locally as you work."
                     : "Editing locked. Review the current structured facts."
             );
-
 
             if (window.lucide) {
                 lucide.createIcons();
@@ -2656,7 +3078,6 @@ const saveInformationButton =
     );
 
 if (saveInformationButton) {
-
     saveInformationButton.addEventListener(
         "click",
         saveInformationVault
@@ -2674,16 +3095,14 @@ const saveDraftButton =
     );
 
 if (saveDraftButton) {
-
     saveDraftButton.addEventListener(
         "click",
         () => {
-
             persistVaultState();
 
-
-            if (!window.jspdf?.jsPDF) {
-
+            if (
+                !window.jspdf?.jsPDF
+            ) {
                 setMessage(
                     "Draft saved, but PDF generation is unavailable. Check your internet connection and try again.",
                     "error"
@@ -2692,24 +3111,26 @@ if (saveDraftButton) {
                 return;
             }
 
-
             const documentPdf =
                 new window.jspdf.jsPDF();
 
             const margin = 16;
 
             const pageWidth =
-                documentPdf.internal.pageSize
+                documentPdf.internal
+                    .pageSize
                     .getWidth();
 
             const pageHeight =
-                documentPdf.internal.pageSize
+                documentPdf.internal
+                    .pageSize
                     .getHeight();
 
             let y = 18;
 
-
-            documentPdf.setFontSize(16);
+            documentPdf.setFontSize(
+                16
+            );
 
             documentPdf.text(
                 "Information Vault Draft",
@@ -2717,11 +3138,11 @@ if (saveDraftButton) {
                 y
             );
 
-
             y += 8;
 
-
-            documentPdf.setFontSize(9);
+            documentPdf.setFontSize(
+                9
+            );
 
             documentPdf.setTextColor(
                 90,
@@ -2729,16 +3150,15 @@ if (saveDraftButton) {
                 130
             );
 
-
             documentPdf.text(
-                `Generated ${new Date().toLocaleString("en-IN")}`,
+                `Generated ${new Date().toLocaleString(
+                    "en-IN"
+                )}`,
                 margin,
                 y
             );
 
-
             y += 10;
-
 
             documentPdf.setTextColor(
                 29,
@@ -2746,38 +3166,35 @@ if (saveDraftButton) {
                 77
             );
 
-
             allFields.forEach(
                 ([key, label]) => {
-
                     const value =
                         String(
                             records[key]
-                                .fieldValue ||
-                            "Not entered"
+                                ?.fieldValue ||
+                                "Not entered"
                         );
-
 
                     const lines =
                         documentPdf
                             .splitTextToSize(
                                 `${label}: ${value}`,
                                 pageWidth -
-                                    margin * 2
+                                    margin *
+                                        2
                             );
-
 
                     if (
                         y +
-                            lines.length * 5 >
-                        pageHeight - margin
+                            lines.length *
+                                5 >
+                        pageHeight -
+                            margin
                     ) {
-
                         documentPdf.addPage();
 
                         y = margin;
                     }
-
 
                     documentPdf.text(
                         lines,
@@ -2785,21 +3202,21 @@ if (saveDraftButton) {
                         y
                     );
 
-
                     y +=
-                        lines.length * 5 +
+                        lines.length *
+                            5 +
                         2;
                 }
             );
-
 
             documentPdf.save(
                 "information-vault-draft.pdf"
             );
 
-
             setMessage(
-                `Information Vault draft saved as PDF at ${new Date().toLocaleTimeString("en-IN")}.`
+                `Information Vault draft saved as PDF at ${new Date().toLocaleTimeString(
+                    "en-IN"
+                )}.`
             );
         }
     );
@@ -2811,7 +3228,6 @@ if (saveDraftButton) {
 // =====================================================
 
 if (form) {
-
     form.addEventListener(
         "submit",
         event => {
@@ -2836,25 +3252,20 @@ window.addEventListener(
 // =====================================================
 
 async function initializeVault() {
-
     /*
      * Load latest Business Profile data.
      */
-
     await syncBusinessProfile();
-
 
     /*
      * Render page.
      */
-
     renderIncentiveVaults();
 
     renderFields();
 
     updateDashboard();
 }
-
 
 initializeVault();
 
@@ -2864,41 +3275,33 @@ initializeVault();
 // =====================================================
 
 function showInformationSavePopup() {
-
     const popup =
         document.getElementById(
             "saveSuccessPopup"
         );
 
-
     if (!popup) {
         return;
     }
-
 
     popup.classList.add(
         "show"
     );
 
-
     if (window.lucide) {
         lucide.createIcons();
     }
-
 
     clearTimeout(
         window.informationVaultPopupTimer
     );
 
-
     window.informationVaultPopupTimer =
         setTimeout(
             () => {
-
                 popup.classList.remove(
                     "show"
                 );
-
             },
             3000
         );
